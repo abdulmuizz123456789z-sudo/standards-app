@@ -1,129 +1,286 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Стандарты</title>
-    <!-- Подключаем библиотеку Telegram -->
+    <title>Diversey Kimyo Standartlari</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #f4f4f7);
+            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #1c1c1e);
+            --hint-color: var(--tg-theme-hint-color, #8e8e93);
+            --accent-color: var(--tg-theme-button-color, #007aff);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+            --warning-bg: #fff9e6;
+            --warning-border: #ffcc00;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-            color: var(--tg-theme-text-color, #000000);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 16px;
+            -webkit-tap-highlight-color: transparent;
         }
-        h2 {
+
+        .header {
             text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
+
+        .header h1 {
+            font-size: 22px;
+            margin: 0 0 6px 0;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--hint-color);
+            margin: 0;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 15px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
         .category {
-            background-color: var(--tg-theme-bg-color, #ffffff);
+            background: var(--card-bg);
             border-radius: 14px;
             margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             overflow: hidden;
-            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.05);
         }
-        .category-btn {
+
+        .category-header {
             width: 100%;
-            padding: 18px 20px;
-            font-size: 17px;
+            padding: 16px;
+            font-size: 16px;
             font-weight: 600;
             text-align: left;
             background: none;
             border: none;
-            color: inherit;
+            color: var(--text-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
         }
-        .category-btn::after {
-            content: '▼';
-            font-size: 12px;
-            color: var(--tg-theme-hint-color, #999999);
+
+        .category-header::after {
+            content: '❯';
+            font-size: 14px;
+            color: var(--hint-color);
             transition: transform 0.3s;
         }
-        .category.active .category-btn::after {
-            transform: rotate(180deg);
+
+        .category.active .category-header::after {
+            transform: rotate(90deg);
         }
-        .sub-menu {
-            max-height: 0;
-            padding: 0 20px;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
+
+        .category-content {
+            display: none;
+            padding: 0 16px 16px 16px;
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
-        .category.active .sub-menu {
-            max-height: 400px; /* С запасом для кнопок */
-            padding: 0 20px 18px;
-            opacity: 1;
-            visibility: visible;
-        }
-        .sub-btn {
+
+        .category.active .category-content {
             display: block;
-            width: 100%;
-            padding: 14px;
-            margin-top: 10px;
-            background-color: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.2s;
         }
-        .sub-btn:active {
-            opacity: 0.7;
+
+        .chem-card {
+            background: rgba(0,0,0,0.02);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .chem-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--accent-color);
+            margin-bottom: 4px;
+        }
+
+        .chem-desc {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .chem-spec {
+            display: inline-block;
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8a6d3b;
+            margin-top: 4px;
         }
     </style>
 </head>
 <body>
-    <h2>📚 База Знаний</h2>
 
-    <!-- Раздел: Кухня -->
+    <div class="header">
+        <h1>🧪 Diversey Kimyo Reglamenti</h1>
+        <p>Restoran tozalik va dezinfeksiya standartlari</p>
+    </div>
+
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Vosita nomi yoki vazifasi bo'yicha qidiruv...">
+
+    <!-- 1. GIGIENA -->
     <div class="category">
-        <button class="category-btn">🍳 Кухня</button>
-        <div class="sub-menu">
-            <button class="sub-btn">🥐 Панера (Выпечка)</button>
-            <button class="sub-btn">🍗 Жарка и фритюр</button>
-            <button class="sub-btn">🍔 Сборка</button>
+        <button class="category-header">🧼 Shaxsiy Gigiyena</button>
+        <div class="category-content">
+            <div class="chem-card">
+                <div class="chem-name">1. Orion Soft Care Plus Free H400</div>
+                <div class="chem-desc">Zaldagi mehmonlar va ishchilar uchun suyuq sovun.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">2. Orion Soft Care Alceplus H500</div>
+                <div class="chem-desc">Ishchilar uchun antiseptik dezinfeksiya vositasi.</div>
+            </div>
         </div>
     </div>
 
-    <!-- Раздел: Зал -->
+    <!-- 2. DEZINFEKSIYA -->
     <div class="category">
-        <button class="category-btn">🍽️ Зал</button>
-        <div class="sub-menu">
-            <button class="sub-btn">🧹 Правила уборки</button>
-            <button class="sub-btn">🗣️ Общение с гостем</button>
+        <button class="category-header">🛡️ Dezinfeksiya va Yuvish</button>
+        <div class="category-content">
+            <div class="chem-card">
+                <div class="chem-name">3. Suma D10</div>
+                <div class="chem-desc">Barcha sirtlar uchun universal dezinfeksiya vositasi.</div>
+                <div class="chem-spec">Norma: 150-200 p.p.m</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">6. Suma Light D1.2</div>
+                <div class="chem-desc">Kuchli yog' dog'larini ketkazish, oynalarni tozalash va moykada idishlarni ivitish uchun.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">7. Suma Tab D4</div>
+                <div class="chem-desc">3 qisimli moykada idishlarni dezinfeksiyalash tabletkasi.</div>
+                <div class="chem-spec">Norma: 40L suv uchun 3 dona tabletka | Suv temp: +50°C | 100 p.p.m</div>
+            </div>
         </div>
     </div>
 
-    <!-- Раздел: Химия -->
+    <!-- 3. ZAL VA POL -->
     <div class="category">
-        <button class="category-btn">🧪 Химия и СанПиН</button>
-        <div class="sub-menu">
-            <button class="sub-btn">🧼 Мойка инвентаря</button>
-            <button class="sub-btn">⚠️ Техника безопасности</button>
+        <button class="category-header">🧹 Zal va Pol Tozalash</button>
+        <div class="category-content">
+            <div class="chem-card">
+                <div class="chem-name">4. Easyfoam</div>
+                <div class="chem-desc">Restoran ichki pollarini chuqur tozalash uchun.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">5. Suma Break Up</div>
+                <div class="chem-desc">Barcha iflos sirtlarni tozalash, zal hojatxonasi va pollarini yuvish uchun.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">15. Room Care R5</div>
+                <div class="chem-desc">Hojatxona uchun va restorandagi noxush hidlarni ketkazish uchun avtomatik asvijitel.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">16. Room Care R6</div>
+                <div class="chem-desc">Rakovina va hojatxona unitazlarini tozalash uchun.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. USKUNALAR -->
+    <div class="category">
+        <button class="category-header">🍳 Oshxona Uskunalari</button>
+        <div class="category-content">
+            <div class="chem-card">
+                <div class="chem-name">8. Suma Cal-X D5</div>
+                <div class="chem-desc">Termoplan va Cola apparati yon sirtlarini tozalash uchun.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">9. Suma Freeze D2.9</div>
+                <div class="chem-desc">Muzlatkich xonalaridagi barcha iflos sirtlarni tozalash uchun.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">13. Suma Grill Hi-Temp D9.8</div>
+                <div class="chem-desc">Gorizontal tosterni tozalash uchun.</div>
+                <div class="chem-spec">Shart: Harorat +100°C dan past bo'lmasligi kerak!</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">14. Suma Anti-Stick</div>
+                <div class="chem-desc">Gorizontal tosterni yog'lash va mahsulot kuyishining oldini olish uchun.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. MAXSUS -->
+    <div class="category">
+        <button class="category-header">⚙️ Maxsus Ishlov Berish</button>
+        <div class="category-content">
+            <div class="chem-card">
+                <div class="chem-name">10. Suma Inox D7.1</div>
+                <div class="chem-desc">Po'latdan (zanglamaydigan metal) yasalgan yaltiroq sirtlarni polirovka qilish uchun.</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">11. Diver Gard 901</div>
+                <div class="chem-desc">Kanalizatsiya va stoklarni tozalash uchun.</div>
+                <div class="chem-spec">Norma: Har bir stok uchun 250 ml | 10-15 min so'ng issiq suv bilan yuviladi</div>
+            </div>
+            <div class="chem-card">
+                <div class="chem-name">12. Taski Sprin Spitfire Plus</div>
+                <div class="chem-desc">Skotch, saqich va boshqa yopishqoq iflos sirtlarni tozalash uchun.</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Команда Telegram для раскрытия приложения на весь экран
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand(); 
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-        // Анимация раскрытия кнопок
-        document.querySelectorAll('.category').forEach(category => {
-            const btn = category.querySelector('.category-btn');
-            btn.addEventListener('click', () => {
+        // Аккордеон
+        document.querySelectorAll('.category-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const category = header.parentElement;
                 category.classList.toggle('active');
+            });
+        });
+
+        // Поиск по названию или описанию
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.category').forEach(category => {
+                let hasMatch = false;
+                category.querySelectorAll('.chem-card').forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        card.style.display = 'block';
+                        hasMatch = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                if (hasMatch) {
+                    category.style.display = 'block';
+                    if (query.length > 0) category.classList.add('active');
+                } else {
+                    category.style.display = query.length > 0 ? 'none' : 'block';
+                }
             });
         });
     </script>
