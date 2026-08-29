@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diversey Kimyo Standartlari</title>
+    <title>KFC / Panera Standartlari</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -12,9 +12,10 @@
             --text-color: var(--tg-theme-text-color, #1c1c1e);
             --hint-color: var(--tg-theme-hint-color, #8e8e93);
             --accent-color: var(--tg-theme-button-color, #007aff);
-            --accent-text: var(--tg-theme-button-text-color, #ffffff);
             --warning-bg: #fff9e6;
             --warning-border: #ffcc00;
+            --danger-bg: #ffebeb;
+            --danger-border: #ff3b30;
         }
 
         body {
@@ -101,7 +102,7 @@
             display: block;
         }
 
-        .chem-card {
+        .card {
             background: rgba(0,0,0,0.02);
             border-radius: 10px;
             padding: 12px;
@@ -109,20 +110,20 @@
             border-left: 4px solid var(--accent-color);
         }
 
-        .chem-name {
+        .card-title {
             font-weight: 700;
             font-size: 15px;
             color: var(--accent-color);
             margin-bottom: 4px;
         }
 
-        .chem-desc {
+        .card-desc {
             font-size: 14px;
             line-height: 1.4;
             margin-bottom: 6px;
         }
 
-        .chem-spec {
+        .badge {
             display: inline-block;
             background: var(--warning-bg);
             border: 1px solid var(--warning-border);
@@ -132,117 +133,215 @@
             font-weight: 600;
             color: #8a6d3b;
             margin-top: 4px;
+            margin-right: 4px;
+        }
+
+        .badge-danger {
+            background: var(--danger-bg);
+            border-color: var(--danger-border);
+            color: #c0392b;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🧪 Diversey Kimyo Reglamenti</h1>
-        <p>Restoran tozalik va dezinfeksiya standartlari</p>
+        <h1>🍗 Panera & Diversey Standartlari</h1>
+        <p>Xodimlar uchun to'liq reglament va yo'riqnoma</p>
     </div>
 
-    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Vosita nomi yoki vazifasi bo'yicha qidiruv...">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Qidiruv (masalan: Stripsi, Magnesol, D10)...">
 
-    <!-- 1. GIGIENA -->
+    <!-- 1. PANEROVKA & ARLASHMALAR -->
     <div class="category">
-        <button class="category-header">🧼 Shaxsiy Gigiyena</button>
+        <button class="category-header">🌾 Panirovka va Aralashmalar</button>
         <div class="category-content">
-            <div class="chem-card">
-                <div class="chem-name">1. Orion Soft Care Plus Free H400</div>
-                <div class="chem-desc">Zaldagi mehmonlar va ishchilar uchun suyuq sovun.</div>
+            <div class="card">
+                <div class="card-title">OR (Original) Aralashmasi</div>
+                <div class="card-desc">Un: 11,340 gr (Yaroqlilik: 12 oy)<br>Ziravorlar MIX OR: 2,270 gr (Yaroqlilik: 12 oy)</div>
+                <div class="badge">Tayyor partiya yaroqliligi: 7 kun</div>
             </div>
-            <div class="chem-card">
-                <div class="chem-name">2. Orion Soft Care Alceplus H500</div>
-                <div class="chem-desc">Ishchilar uchun antiseptik dezinfeksiya vositasi.</div>
+            <div class="card">
+                <div class="card-title">HS (Hot & Spicy) Aralashmasi</div>
+                <div class="card-desc">Un: 11,340 gr (Yaroqlilik: 12 oy)<br>Ziravorlar HS: 198 gr (Yaroqlilik: 9 oy)</div>
+                <div class="badge">Tayyor partiya yaroqliligi: 7 kun</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Panerovka va Elash Qoidalari</div>
+                <div class="card-desc">
+                    • Yangi to'plamni 20 marta aralashtirish: yig'ing-qoplang, yig'ing-ko'taring, keyin 2 marta elakdan o'tkazing.<br>
+                    • Kechagi partiya yangi bilan 1:1 nisbatda aralashtiriladi.<br>
+                    • Unni elash va suvni almashtirish: Oyoq va Zinger uchun 4 martagacha, qolgan mahsulotlar uchun 2 martagacha.
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. DEZINFEKSIYA -->
+    <!-- 2. PISHIRISH REGLAMENTI -->
     <div class="category">
-        <button class="category-header">🛡️ Dezinfeksiya va Yuvish</button>
+        <button class="category-header">🔥 Pishirish Reglamenti (Frityur)</button>
         <div class="category-content">
-            <div class="chem-card">
-                <div class="chem-name">3. Suma D10</div>
-                <div class="chem-desc">Barcha sirtlar uchun universal dezinfeksiya vositasi.</div>
-                <div class="chem-spec">Norma: 150-200 p.p.m</div>
+            <div class="card">
+                <div class="card-title">🔒 Yopiq Jarovnya (Henny Penny)</div>
+                <div class="card-desc">
+                    <b>Oyoqlar:</b> Min 9 / Max 20 dona (1 setka: 9-18 dona)<br>
+                    - 9-18 dona: 154°C | 14:30 min<br>
+                    - 36 dona: 168°C | 14:00 min<br>
+                    - 54 dona: 171°C | 14:00 min<br>
+                    - 72 dona: 182°C | 14:00 min<br><br>
+                    <b>Stripsi OR:</b> Min 6 / Max 36 (1 setka: 18 dona)<br>
+                    - 18 dona: 175°C | 4:20 min<br>
+                    - 36 dona: 175°C | 4:50 min<br><br>
+                    <b>File OR / Klasik:</b> Min 6 / Max 12 (1 setka: 6 dona)<br>
+                    - 6-18 dona: 182°C | 5:30 min<br>
+                    - 19-24 dona: 182°C | 6:30 min
+                </div>
             </div>
-            <div class="chem-card">
-                <div class="chem-name">6. Suma Light D1.2</div>
-                <div class="chem-desc">Kuchli yog' dog'larini ketkazish, oynalarni tozalash va moykada idishlarni ivitish uchun.</div>
-            </div>
-            <div class="chem-card">
-                <div class="chem-name">7. Suma Tab D4</div>
-                <div class="chem-desc">3 qisimli moykada idishlarni dezinfeksiyalash tabletkasi.</div>
-                <div class="chem-spec">Norma: 40L suv uchun 3 dona tabletka | Suv temp: +50°C | 100 p.p.m</div>
+            <div class="card">
+                <div class="card-title">🔓 Ochiq Jarovnya</div>
+                <div class="card-desc">
+                    <b>Stripsi HS (Achchiq):</b> Min 6 / Max 36 (1 otkitnoy savat: 18 dona)<br>
+                    - 171°C | 4:30 min<br><br>
+                    <b>File HS / Zinger:</b> Min 3 / Max 18 (1 otkitnoy savat: 9 dona)<br>
+                    - 171°C | 7:00 min<br><br>
+                    <b>Qanotlar:</b> Min 15 / Max 60 (1 savat: 15-30 dona)<br>
+                    - 171°C | 10:00 min (2-daqiqadan so'ng chayqatiladi)<br><br>
+                    <b>Baytsi:</b> Min 190g / Max 1000g (1 savat: 190g-500g, tayyorlash: 7-10-7)<br>
+                    - 171°C | 3:05 min (45 soniyadan keyin chayqatiladi)
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. ZAL VA POL -->
+    <!-- 3. MOY VA FILTRATSIYA -->
     <div class="category">
-        <button class="category-header">🧹 Zal va Pol Tozalash</button>
+        <button class="category-header">🛢️ Moy va Filtratsiya</button>
         <div class="category-content">
-            <div class="chem-card">
-                <div class="chem-name">4. Easyfoam</div>
-                <div class="chem-desc">Restoran ichki pollarini chuqur tozalash uchun.</div>
+            <div class="card">
+                <div class="card-title">Magnesol Kukunidan Foydalanish</div>
+                <div class="card-desc">Дозировка: 30 litr moy uchun 182 gr. Yaroqlilik muddati: 5 yil.</div>
             </div>
-            <div class="chem-card">
-                <div class="chem-name">5. Suma Break Up</div>
-                <div class="chem-desc">Barcha iflos sirtlarni tozalash, zal hojatxonasi va pollarini yuvish uchun.</div>
-            </div>
-            <div class="chem-card">
-                <div class="chem-name">15. Room Care R5</div>
-                <div class="chem-desc">Hojatxona uchun va restorandagi noxush hidlarni ketkazish uchun avtomatik asvijitel.</div>
-            </div>
-            <div class="chem-card">
-                <div class="chem-name">16. Room Care R6</div>
-                <div class="chem-desc">Rakovina va hojatxona unitazlarini tozalash uchun.</div>
+            <div class="card">
+                <div class="card-title">Filtratsiya va Osvitleniya</div>
+                <div class="card-desc">
+                    • <b>Filtratsiya:</b> Har 10 ta pishirish tsiklidan keyin bajariladi.<br>
+                    • <b>Osvitleniya:</b> Kuniga 2 marta (1. Ertalabki chas-pikdan oldin, 2. Kechki chas-pikdan oldin jarovnya tozalash bilan).<br>
+                    • Yopiq frityur HP 8: 2 ta Magnesol o'rami.<br>
+                    • Ochiq frityur HP: har biriga 1 o'ram Magnesol.
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 4. USKUNALAR -->
+    <!-- 4. SHAXSIY HIMOYA VOSTA (SIZ) -->
     <div class="category">
-        <button class="category-header">🍳 Oshxona Uskunalari</button>
+        <button class="category-header">🛡️ Shaxsiy Himoya Vositalari (СИЗ)</button>
         <div class="category-content">
-            <div class="chem-card">
-                <div class="chem-name">8. Suma Cal-X D5</div>
-                <div class="chem-desc">Termoplan va Cola apparati yon sirtlarini tozalash uchun.</div>
+            <div class="card">
+                <div class="card-title">1. Panerovichniy</div>
+                <div class="card-desc">Qo'lqop, Maska, Fartuk</div>
             </div>
-            <div class="chem-card">
-                <div class="chem-name">9. Suma Freeze D2.9</div>
-                <div class="chem-desc">Muzlatkich xonalaridagi barcha iflos sirtlarni tozalash uchun.</div>
+            <div class="card">
+                <div class="card-title">2. Elektrichiskiy</div>
+                <div class="card-desc">Rezina etik, Qo'lqop, Maska</div>
             </div>
-            <div class="chem-card">
-                <div class="chem-name">13. Suma Grill Hi-Temp D9.8</div>
-                <div class="chem-desc">Gorizontal tosterni tozalash uchun.</div>
-                <div class="chem-spec">Shart: Harorat +100°C dan past bo'lmasligi kerak!</div>
-            </div>
-            <div class="chem-card">
-                <div class="chem-name">14. Suma Anti-Stick</div>
-                <div class="chem-desc">Gorizontal tosterni yog'lash va mahsulot kuyishining oldini olish uchun.</div>
+            <div class="card">
+                <div class="card-title">3. Ximichiskiy</div>
+                <div class="card-desc">Maska, Qo'lqop</div>
             </div>
         </div>
     </div>
 
-    <!-- 5. MAXSUS -->
+    <!-- 5. ISSIQLIK SHKAFI -->
     <div class="category">
-        <button class="category-header">⚙️ Maxsus Ishlov Berish</button>
+        <button class="category-header">🌡️ Issiqlik Shkafi (Saqlash)</button>
         <div class="category-content">
-            <div class="chem-card">
-                <div class="chem-name">10. Suma Inox D7.1</div>
-                <div class="chem-desc">Po'latdan (zanglamaydigan metal) yasalgan yaltiroq sirtlarni polirovka qilish uchun.</div>
+            <div class="card">
+                <div class="card-title">Tayyor Mahsulot Saqlash Vaqtlari</div>
+                <div class="card-desc">
+                    • Oyoqlar / Qanotlar: <b>90 min</b><br>
+                    • File OR / HS: <b>45 min</b><br>
+                    • Stripsi OR / HS: <b>30 min</b><br>
+                    • Baytsi: <b>15 min</b>
+                </div>
+                <div class="badge">Shkaf temp: +65°C...+82°C</div>
+                <div class="badge">Go'sht min temp: +60°C</div>
+                <div class="badge badge-danger">Yangi go'sht temp: > +85°C</div>
             </div>
-            <div class="chem-card">
-                <div class="chem-name">11. Diver Gard 901</div>
-                <div class="chem-desc">Kanalizatsiya va stoklarni tozalash uchun.</div>
-                <div class="chem-spec">Norma: Har bir stok uchun 250 ml | 10-15 min so'ng issiq suv bilan yuviladi</div>
+        </div>
+    </div>
+
+    <!-- 6. DIVERSEY XIMIYA -->
+    <div class="category">
+        <button class="category-header">🧪 Diversey Kimyoviy Vositalari</button>
+        <div class="category-content">
+            <div class="card">
+                <div class="card-title">1. Orion Soft Care Plus Free H400</div>
+                <div class="card-desc">Zaldagi mehmonlar va ishchilar uchun suyuq sovun.</div>
             </div>
-            <div class="chem-card">
-                <div class="chem-name">12. Taski Sprin Spitfire Plus</div>
-                <div class="chem-desc">Skotch, saqich va boshqa yopishqoq iflos sirtlarni tozalash uchun.</div>
+            <div class="card">
+                <div class="card-title">2. Orion Soft Care Alceplus H500</div>
+                <div class="card-desc">Ishchilar uchun antiseptik dezinfeksiya.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">3. Suma D10</div>
+                <div class="card-desc">Barcha sirtlar uchun dezinfeksiya.</div>
+                <div class="badge">Norma: 150-200 p.p.m</div>
+            </div>
+            <div class="card">
+                <div class="card-title">4. Easyfoam</div>
+                <div class="card-desc">Restoran ichki pollarini tozalash uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">5. Suma Break Up</div>
+                <div class="card-desc">Barcha iflos sirtlarni tozalash, zal hojatxonasi va pollarini yuvish uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">6. Suma Light D1.2</div>
+                <div class="card-desc">Kuchli yog' dog'larini ketkazish, oynalarni tozalash va moykada idishlarni ivitish uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">7. Suma Tab D4</div>
+                <div class="card-desc">3 qisimli moykada idishlarni dezinfeksiyalash tabletkasi.</div>
+                <div class="badge">40L suv uchun 3 dona | +50°C | 100 p.p.m</div>
+            </div>
+            <div class="card">
+                <div class="card-title">8. Suma Cal-X D5</div>
+                <div class="card-desc">Termoplan va Cola apparatni yon sirtlarini tozalash uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">9. Suma Freeze D2.9</div>
+                <div class="card-desc">Muzlatkich xonalaridagi barcha iflos sirtlarni tozalash uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">10. Suma Inox D7.1</div>
+                <div class="card-desc">Po'latdan yasalgan yaltiroq sirtlarni polirovka qilish uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">11. Diver Gard 901</div>
+                <div class="card-desc">Kanalizatsiya va stoklarni tozalash uchun.</div>
+                <div class="badge">Norma: 250 ml | 10-15 min so'ng issiq suv</div>
+            </div>
+            <div class="card">
+                <div class="card-title">12. Taski Sprin Spitfire Plus</div>
+                <div class="card-desc">Skotch, saqich va boshqa yopishqoq iflos sirtlarni tozalash uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">13. Suma Grill Hi-Temp D9.8</div>
+                <div class="card-desc">Gorizontal tosterni tozalash uchun.</div>
+                <div class="badge badge-danger">Harorat: >= +100°C</div>
+            </div>
+            <div class="card">
+                <div class="card-title">14. Suma Anti-Stick</div>
+                <div class="card-desc">Gorizontal tosterni yog'lash uchun, kuyishdan oldini olish uchun.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">15. Room Care R5</div>
+                <div class="card-desc">Hojatxona uchun va restorandagi noxush hidlarni ketkazish uchun avtosvijitel.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">16. Room Care R6</div>
+                <div class="card-desc">Rakovina va hojatxona unitazlarini tozalash uchun.</div>
             </div>
         </div>
     </div>
@@ -260,12 +359,12 @@
             });
         });
 
-        // Поиск по названию или описанию
+        // Поиск
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase();
             document.querySelectorAll('.category').forEach(category => {
                 let hasMatch = false;
-                category.querySelectorAll('.chem-card').forEach(card => {
+                category.querySelectorAll('.card').forEach(card => {
                     const text = card.textContent.toLowerCase();
                     if (text.includes(query)) {
                         card.style.display = 'block';
