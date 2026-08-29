@@ -18,6 +18,23 @@
             --danger-border: #ff3b30;
         }
 
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: translateY(15px) scale(0.97);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.2); }
+            70% { box-shadow: 0 0 0 8px rgba(0, 122, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
@@ -29,13 +46,15 @@
 
         .header {
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .header h1 {
-            font-size: 22px;
+            font-size: 24px;
             margin: 0 0 6px 0;
             font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         .header p {
@@ -46,29 +65,43 @@
 
         .search-box {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,0.1);
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.08);
             background: var(--card-bg);
             color: var(--text-color);
             font-size: 15px;
             box-sizing: border-box;
             margin-bottom: 16px;
             outline: none;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            animation: fadeInScale 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent-color);
+            animation: pulseGlow 1.5s infinite;
         }
 
         .category {
             background: var(--card-bg);
-            border-radius: 14px;
+            border-radius: 16px;
             margin-bottom: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.04);
+            transform: translateZ(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .category:active {
+            transform: scale(0.995);
         }
 
         .category-header {
             width: 100%;
-            padding: 16px;
+            padding: 18px 20px;
             font-size: 16px;
             font-weight: 600;
             text-align: left;
@@ -79,48 +112,80 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            user-select: none;
         }
 
         .category-header::after {
             content: '❯';
-            font-size: 14px;
+            font-size: 13px;
             color: var(--hint-color);
-            transition: transform 0.3s;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
         .category.active .category-header::after {
             transform: rotate(90deg);
+            color: var(--accent-color);
         }
 
         .category-content {
-            display: none;
-            padding: 0 16px 16px 16px;
-            border-top: 1px solid rgba(0,0,0,0.05);
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 20px;
+            opacity: 0;
+            transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.35s ease, 
+                        padding 0.35s ease;
         }
 
         .category.active .category-content {
-            display: block;
+            max-height: 3500px; /* Yetarlicha balandlik */
+            opacity: 1;
+            padding: 0 20px 20px 20px;
         }
 
         .card {
-            background: rgba(0,0,0,0.02);
-            border-radius: 10px;
-            padding: 12px;
-            margin-top: 10px;
+            background: rgba(0,0,0,0.015);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 12px;
             border-left: 4px solid var(--accent-color);
+            transition: transform 0.25s ease, background 0.25s ease;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .category.active .card {
+            animation: fadeInScale 0.4s ease forwards;
+        }
+
+        /* Har bir card uchun chiqish navbatini biroz kechiktirish */
+        .category.active .card:nth-child(1) { animation-delay: 0.05s; }
+        .category.active .card:nth-child(2) { animation-delay: 0.09s; }
+        .category.active .card:nth-child(3) { animation-delay: 0.13s; }
+        .category.active .card:nth-child(4) { animation-delay: 0.17s; }
+        .category.active .card:nth-child(5) { animation-delay: 0.21s; }
+        .category.active .card:nth-child(n+6) { animation-delay: 0.25s; }
+
+        .card:hover {
+            background: rgba(0,0,0,0.03);
+            transform: translateX(4px);
         }
 
         .card-title {
             font-weight: 700;
             font-size: 15px;
             color: var(--accent-color);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .card-desc {
             font-size: 14px;
-            line-height: 1.4;
-            margin-bottom: 6px;
+            line-height: 1.5;
+            color: var(--text-color);
+            margin-bottom: 8px;
         }
 
         .badge {
@@ -134,6 +199,11 @@
             color: #8a6d3b;
             margin-top: 4px;
             margin-right: 4px;
+            transition: transform 0.2s;
+        }
+
+        .badge:hover {
+            transform: scale(1.05);
         }
 
         .badge-danger {
@@ -147,7 +217,7 @@
 
     <div class="header">
         <h1>🍗 Panera & Diversey Standartlari</h1>
-        <p>Xodimlar uchun to'liq reglament va yo'riqnoma</p>
+        <p>Jonli animatsiyali interaktiv xodimlar yo'riqnomasi</p>
     </div>
 
     <input type="text" id="searchInput" class="search-box" placeholder="🔍 Qidiruv (masalan: Tsezar, Twister, Burger, D10)...">
@@ -165,7 +235,6 @@
                     • Tomatlar — 15 g<br>
                     • Stripslar OR/HS — 2 dona
                 </div>
-                 <div class="badge">Тостерда: 15 сек.</div>
             </div>
             <div class="card">
                 <div class="card-title">📦 Boksmaster OR / HS</div>
@@ -178,7 +247,7 @@
                     • Siyr — 1 dona<br>
                     • Hashbraun — 1 dona
                 </div>
-                <div class="badge">Тостерда: 18 сек.</div>
+                <div class="badge">Тостерда: 15 сек.</div>
             </div>
             <div class="card">
                 <div class="card-title">🧀📦 Boksmaster Chiz OR / HS</div>
@@ -190,7 +259,7 @@
                     • Siyr kotleti — 1 dona<br>
                     • File OR yoki HS — 1 dona
                 </div>
-                <div class="badge">Тостерда: 18 сек.</div>
+                <div class="badge">Тостерда: 15 сек.</div>
             </div>
             <div class="card">
                 <div class="card-title">🧀 Tvister Junior</div>
@@ -203,7 +272,6 @@
                     • Bodring — 2 dona<br>
                     • Baytslar — 5 dona (53 g)
                 </div>
-                 <div class="badge">Тостерда: 10 сек.</div>
             </div>
             <div class="card">
                 <div class="card-title">🌯 Mega Tvister OR / HS</div>
@@ -357,6 +425,11 @@
                 </div>
             </div>
             <div class="card">
+                <div class="card-title">🧅 Qovurilgan Piyoz (Жареный лук)</div>
+                <div class="card-desc">
+                    • Marmitka ichida: <b>12 soat</b><br>
+                    • Ishlab chiqaruvchi o'ramida: ishlab chiqaruvchi markirovkasi bo'yicha
+                </div>
             </div>
         </div>
     </div>
@@ -393,8 +466,8 @@
             <div class="card">
                 <div class="card-title">🔒 Yopiq Jarovnya (Henny Penny)</div>
                 <div class="card-desc">
-                    <b>Oyoqlar:</b> Min / Max 18 dona (1 setka: 18 dona)<br>
-                    - 18 dona: 154°C | 14:30 min<br>
+                    <b>Oyoqlar:</b> Min 9 / Max 20 dona (1 setka: 9-18 dona)<br>
+                    - 9-18 dona: 154°C | 14:30 min<br>
                     - 36 dona: 168°C | 14:00 min<br>
                     - 54 dona: 171°C | 14:00 min<br>
                     - 72 dona: 182°C | 14:00 min<br><br>
@@ -461,7 +534,7 @@
                     • Yog'ni oqizish: 5 sek<br>
                     • Saqlash: 5 min<br>
                     • Tuzlash: 230-500g — 1 perevorot; 500-680g — 2 perevorot. Aralashtirish: 6 marta.<br>
-                    • Portsiyalar (Og'irligi): Kichik — 60 g (Upakovka bilan 62 g), O'rta — 100 g (Upakovka bilan 107 g), Katta — 200 g (Upakovka bilan 213 g).
+                    • Portsiyalar (Og'irligi): Kichik — 60 g (paket bilan 62 g), O'rta — 100 g (paket bilan 107 g), Katta — 200 g (paket bilan 213 g).
                 </div>
             </div>
         </div>
@@ -492,7 +565,7 @@
         <button class="category-header">🛡️ Shaxsiy Himoya Vositalari (СИЗ)</button>
         <div class="category-content">
             <div class="card">
-                <div class="card-title">1. Biologicheskiy</div>
+                <div class="card-title">1. Panerovichniy</div>
                 <div class="card-desc">Qo'lqop, Maska, Fartuk</div>
             </div>
             <div class="card">
@@ -519,7 +592,7 @@
                     • Baytsi: <b>15 min</b>
                 </div>
                 <div class="badge">Shkaf temp: +65°C...+82°C</div>
-                <div class="badge">Go'sht min temp: +65°C</div>
+                <div class="badge">Go'sht min temp: +60°C</div>
                 <div class="badge badge-danger">Yangi go'sht temp: > +85°C</div>
             </div>
         </div>
@@ -605,7 +678,7 @@
         tg.ready();
         tg.expand();
 
-        // Аккордеон
+        // Akкордеон плавным движением (CSS max-height орқали ишлайди)
         document.querySelectorAll('.category-header').forEach(header => {
             header.addEventListener('click', () => {
                 const category = header.parentElement;
@@ -613,9 +686,9 @@
             });
         });
 
-        // Поиск
+        // Жонли қидирув функцияси
         document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
+            const query = e.target.value.toLowerCase().trim();
             document.querySelectorAll('.category').forEach(category => {
                 let hasMatch = false;
                 category.querySelectorAll('.card').forEach(card => {
@@ -630,7 +703,9 @@
                 
                 if (hasMatch) {
                     category.style.display = 'block';
-                    if (query.length > 0) category.classList.add('active');
+                    if (query.length > 0) {
+                        category.classList.add('active');
+                    }
                 } else {
                     category.style.display = query.length > 0 ? 'none' : 'block';
                 }
