@@ -41,6 +41,7 @@
             padding: 16px;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            overflow-x: hidden;
         }
 
         #lockScreen {
@@ -91,7 +92,7 @@
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
             position: relative;
-            touch-action: none; /* Qotish va skroll qilishning oldini oladi */
+            touch-action: none;
         }
 
         .pattern-dot {
@@ -107,8 +108,8 @@
 
         .pattern-dot::after {
             content: '';
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             background-color: rgba(142, 142, 147, 0.3);
             border-radius: 50%;
             transition: background-color 0.15s, transform 0.15s;
@@ -133,6 +134,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            overflow: visible;
         }
 
         .lock-error-msg {
@@ -344,7 +346,7 @@
             
             <div class="pattern-grid" id="patternGrid">
                 <svg id="patternSvg">
-                    <line id="activeLine" x1="0" y1="0" x2="0" y2="0" stroke="#e4002b" stroke-width="4" stroke-linecap="round" style="display:none;"/>
+                    <path id="activePath" d="" stroke="#e4002b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" style="display:none;"/>
                 </svg>
                 <div class="pattern-dot" data-id="0"></div>
                 <div class="pattern-dot" data-id="1"></div>
@@ -408,11 +410,10 @@
         let selectedDots = [];
         const grid = document.getElementById('patternGrid');
         const dots = document.querySelectorAll('.pattern-dot');
-        const activeLine = document.getElementById('activeLine');
+        const activePath = document.getElementById('activePath');
         const errorMsg = document.getElementById('errorMsg');
         const lockContainer = document.getElementById('lockContainer');
 
-        // Nuqtalarning markaziy koordinatalarini oldindan hisoblab qo'shamiz (tezlik uchun)
         let dotCoords = [];
 
         function updateDotCoords() {
@@ -429,26 +430,32 @@
         }
 
         window.addEventListener('resize', updateDotCoords);
-        setTimeout(updateDotCoords, 100);
+        setTimeout(updateDotCoords, 50);
 
-        function getDotCenter(id) {
-            const found = dotCoords.find(d => d.id === id);
-            return found ? { x: found.x, y: found.y } : { x: 0, y: 0 };
-        }
-
-        function updateSvgLine() {
-            if (selectedDots.length < 2) {
-                activeLine.style.display = 'none';
+        function updateSvgPath(currentMousePos = null) {
+            if (selectedDots.length === 0) {
+                activePath.style.display = 'none';
                 return;
             }
-            const start = getDotCenter(selectedDots[0]);
-            const end = getDotCenter(selectedDots[selectedDots.length - 1]);
 
-            activeLine.setAttribute('x1', start.x);
-            activeLine.setAttribute('y1', start.y);
-            activeLine.setAttribute('x2', end.x);
-            activeLine.setAttribute('y2', end.y);
-            activeLine.style.display = 'block';
+            let d = "";
+            for (let i = 0; i < selectedDots.length; i++) {
+                const dot = dotCoords.find(d => d.id === selectedDots[i]);
+                if (!dot) continue;
+                if (i === 0) {
+                    d += `M ${dot.x} ${dot.y}`;
+                } else {
+                    d += ` L ${dot.x} ${dot.y}`;
+                }
+            }
+
+            // Agar barmoq/mishqali hozir harakatlanayotgan bo'lsa, oxirgi nuqtadan kursorga qarab chiziqni tortib turamiz
+            if (currentMousePos && isDrawing) {
+                d += ` L ${currentMousePos.x} ${currentMousePos.y}`;
+            }
+
+            activePath.setAttribute('d', d);
+            activePath.style.display = 'block';
         }
 
         function checkPoint(clientX, clientY) {
@@ -457,17 +464,17 @@
             const y = clientY - gridRect.top;
 
             for (let dot of dotCoords) {
-                // Har bir nuqta atrofida qulay tutish radiusi (taxminan 35px)
                 const distance = Math.hypot(dot.x - x, dot.y - y);
-                if (distance < 35) {
+                // Nuqta teginish radiusi (kengaytirilgan - 40px, adashib ketmasligi uchun)
+                if (distance < 40) {
                     if (!selectedDots.includes(dot.id)) {
                         selectedDots.push(dot.id);
                         dot.element.classList.add('active');
-                        updateSvgLine();
                     }
                     break;
                 }
             }
+            updateSvgPath({ x, y });
         }
 
         function handleStart(e) {
@@ -476,7 +483,7 @@
             selectedDots = [];
             errorMsg.style.opacity = '0';
             dots.forEach(d => d.classList.remove('active', 'error'));
-            activeLine.style.display = 'none';
+            activePath.style.display = 'none';
             
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -496,10 +503,13 @@
 
             if (selectedDots.length === 0) return;
 
+            // Faqat to'g'ri nuqtalar ketma-ketligini tekshiramiz
             const userPatternStr = JSON.stringify(selectedDots);
             const correctPatternStr = JSON.stringify(CORRECT_PATTERN);
 
             if (userPatternStr === correctPatternStr) {
+                // To'g'ri kiritilganda chiziqni yakuniy holatda qoldirib, ekran ochiladi
+                updateSvgPath(null);
                 document.getElementById('lockScreen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('lockScreen').style.display = 'none';
@@ -513,7 +523,7 @@
                 setTimeout(() => {
                     lockContainer.classList.remove('shake-anim');
                     dots.forEach(d => d.classList.remove('active', 'error'));
-                    activeLine.style.display = 'none';
+                    activePath.style.display = 'none';
                     selectedDots = [];
                 }, 500);
             }
