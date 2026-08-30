@@ -82,57 +82,19 @@
             margin-bottom: 24px;
         }
 
-        .pattern-grid {
-            width: 240px;
-            height: 240px;
+        .pattern-canvas-wrap {
+            width: 260px;
+            height: 260px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
             position: relative;
             touch-action: none;
         }
 
-        .pattern-dot {
+        canvas {
+            display: block;
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            cursor: pointer;
             touch-action: none;
-        }
-
-        .pattern-dot::after {
-            content: '';
-            width: 22px;
-            height: 22px;
-            background-color: rgba(142, 142, 147, 0.3);
-            border-radius: 50%;
-            transition: background-color 0.15s, transform 0.15s;
-            pointer-events: none;
-        }
-
-        .pattern-dot.active::after {
-            background-color: var(--accent-color);
-            transform: scale(1.35);
-            box-shadow: 0 0 12px rgba(228, 0, 43, 0.6);
-        }
-
-        .pattern-dot.error::after {
-            background-color: #ff3b30;
-            box-shadow: 0 0 12px rgba(255, 59, 48, 0.6);
-        }
-
-        #patternSvg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: visible;
         }
 
         .lock-error-msg {
@@ -342,11 +304,9 @@
             <div class="lock-title">Himoyalangan Hudud</div>
             <div class="lock-subtitle">Kirish uchun "Z" kalitini chizing</div>
             
-            <div class="pattern-grid" id="patternGrid">
-                <svg id="patternSvg">
-                    <path id="activePath" d="" stroke="#e4002b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" style="display:none;"/>
-                </svg>
-                <div class="pattern-dot" data-id="0"></div> <div class="pattern-dot" data-id="1"></div> <div class="pattern-dot" data-id="2"></div> <div class="pattern-dot" data-id="3"></div> <div class="pattern-dot" data-id="4"></div> <div class="pattern-dot" data-id="5"></div> <div class="pattern-dot" data-id="6"></div> <div class="pattern-dot" data-id="7"></div> <div class="pattern-dot" data-id="8"></div> </div>
+            <div class="pattern-canvas-wrap">
+                <canvas id="patternCanvas" width="520" height="520"></canvas>
+            </div>
 
             <div class="lock-error-msg" id="errorMsg">Noto'g'ri kalit! Qayta urinib ko'ring</div>
         </div>
@@ -393,136 +353,163 @@
         tg.ready();
         tg.expand();
 
-        // Точный путь по картинке Z (3 -> 2 -> 1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9)
-        // Переведенный в индексы: ['2', '1', '0', '3', '4', '5', '6', '7', '8']
-        const CORRECT_PATTERN = ['2', '1', '0', '3', '4', '5', '6', '7', '8'];
-
-        let isDrawing = false;
-        let selectedDots = [];
-        const grid = document.getElementById('patternGrid');
-        const dots = document.querySelectorAll('.pattern-dot');
-        const activePath = document.getElementById('activePath');
+        const canvas = document.getElementById('patternCanvas');
+        const ctx = canvas.getContext('2d');
         const errorMsg = document.getElementById('errorMsg');
         const lockContainer = document.getElementById('lockContainer');
 
-        let dotCoords = [];
+        // Правильный порядок по букве Z: индексы от 0 до 8 (3 -> 2 -> 1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9)
+        const CORRECT_PATTERN = [2, 1, 0, 3, 4, 5, 6, 7, 8];
 
-        function updateDotCoords() {
-            const gridRect = grid.getBoundingClientRect();
-            dotCoords = Array.from(dots).map(dot => {
-                const rect = dot.getBoundingClientRect();
-                return {
-                    id: dot.getAttribute('data-id'),
-                    x: rect.left + rect.width / 2 - gridRect.left,
-                    y: rect.top + rect.height / 2 - gridRect.top,
-                    element: dot
-                };
+        // Координаты 9 точек на холсте 520x520
+        const dots = [
+            {id: 0, x: 104, y: 104}, // 1
+            {id: 1, x: 260, y: 104}, // 2
+            {id: 2, x: 416, y: 104}, // 3
+            {id: 3, x: 104, y: 260}, // 4
+            {id: 4, x: 260, y: 260}, // 5
+            {id: 5, x: 416, y: 260}, // 6
+            {id: 6, x: 104, y: 416}, // 7
+            {id: 7, x: 260, y: 416}, // 8
+            {id: 8, x: 416, y: 416}  // 9
+        ];
+
+        let isDrawing = false;
+        let selectedDots = [];
+        let currentPos = null;
+        let isErrorState = false;
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Рисуем линии соединения
+            if (selectedDots.length > 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = isErrorState ? '#ff3b30' : '#e4002b';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                const first = dots.find(d => d.id === selectedDots[0]);
+                ctx.moveTo(first.x, first.y);
+
+                for (let i = 1; i < selectedDots.length; i++) {
+                    const dot = dots.find(d => d.id === selectedDots[i]);
+                    ctx.lineTo(dot.x, dot.y);
+                }
+
+                if (isDrawing && currentPos) {
+                    ctx.lineTo(currentPos.x, currentPos.y);
+                }
+
+                ctx.stroke();
+            }
+
+            // Рисуем точки
+            dots.forEach(dot => {
+                const isSelected = selectedDots.includes(dot.id);
+                
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, isSelected ? 22 : 14, 0, Math.PI * 2);
+                
+                if (isErrorState) {
+                    ctx.fillStyle = isSelected ? '#ff3b30' : 'rgba(142, 142, 147, 0.35)';
+                } else {
+                    ctx.fillStyle = isSelected ? '#e4002b' : 'rgba(142, 142, 147, 0.35)';
+                }
+                ctx.fill();
+
+                // Внутренний кружок для красоты
+                if (isSelected) {
+                    ctx.beginPath();
+                    ctx.arc(dot.x, dot.y, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                }
             });
         }
 
-        window.addEventListener('resize', updateDotCoords);
-        setTimeout(updateDotCoords, 50);
-
-        function updateSvgPath(currentMousePos = null) {
-            if (selectedDots.length === 0) {
-                activePath.style.display = 'none';
-                return;
-            }
-
-            let d = "";
-            for (let i = 0; i < selectedDots.length; i++) {
-                const dot = dotCoords.find(d => d.id === selectedDots[i]);
-                if (!dot) continue;
-                if (i === 0) {
-                    d += `M ${dot.x} ${dot.y}`;
-                } else {
-                    d += ` L ${dot.x} ${dot.y}`;
-                }
-            }
-
-            if (currentMousePos && isDrawing) {
-                d += ` L ${currentMousePos.x} ${currentMousePos.y}`;
-            }
-
-            activePath.setAttribute('d', d);
-            activePath.style.display = 'block';
+        function getCanvasPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
         }
 
-        function checkPoint(clientX, clientY) {
-            const gridRect = grid.getBoundingClientRect();
-            const x = clientX - gridRect.left;
-            const y = clientY - gridRect.top;
-
-            for (let dot of dotCoords) {
-                const distance = Math.hypot(dot.x - x, dot.y - y);
-                if (distance < 45) {
+        function checkHit(pos) {
+            for (let dot of dots) {
+                const dist = Math.hypot(dot.x - pos.x, dot.y - pos.y);
+                // Радиус захвата точки (очень широкий для удобства - 55 пикселей)
+                if (dist < 55) {
                     if (!selectedDots.includes(dot.id)) {
                         selectedDots.push(dot.id);
-                        dot.element.classList.add('active');
                     }
                     break;
                 }
             }
-            updateSvgPath({ x, y });
         }
 
-        function handleStart(e) {
-            if (dotCoords.length === 0) updateDotCoords();
+        canvas.addEventListener('pointerdown', (e) => {
             isDrawing = true;
+            isErrorState = false;
             selectedDots = [];
             errorMsg.style.opacity = '0';
-            dots.forEach(d => d.classList.remove('active', 'error'));
-            activePath.style.display = 'none';
-            
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            checkPoint(clientX, clientY);
-        }
+            currentPos = getCanvasPos(e);
+            checkHit(currentPos);
+            draw();
+            canvas.setPointerCapture(e.pointerId);
+        });
 
-        function handleMove(e) {
+        canvas.addEventListener('pointermove', (e) => {
             if (!isDrawing) return;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            checkPoint(clientX, clientY);
-        }
+            currentPos = getCanvasPos(e);
+            checkHit(currentPos);
+            draw();
+        });
 
-        function handleEnd() {
+        function handlePointerUp() {
             if (!isDrawing) return;
             isDrawing = false;
+            currentPos = null;
 
-            if (selectedDots.length === 0) return;
+            if (selectedDots.length === 0) {
+                draw();
+                return;
+            }
 
-            const userPatternStr = JSON.stringify(selectedDots);
-            const correctPatternStr = JSON.stringify(CORRECT_PATTERN);
+            const userStr = JSON.stringify(selectedDots);
+            const correctStr = JSON.stringify(CORRECT_PATTERN);
 
-            if (userPatternStr === correctPatternStr) {
-                updateSvgPath(null);
+            if (userStr === correctStr) {
+                draw();
                 document.getElementById('lockScreen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('lockScreen').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
                 }, 300);
             } else {
-                dots.forEach(d => d.classList.add('error'));
+                isErrorState = true;
                 errorMsg.style.opacity = '1';
                 lockContainer.classList.add('shake-anim');
-                
+                draw();
+
                 setTimeout(() => {
                     lockContainer.classList.remove('shake-anim');
-                    dots.forEach(d => d.classList.remove('active', 'error'));
-                    activePath.style.display = 'none';
+                    isErrorState = false;
                     selectedDots = [];
+                    draw();
                 }, 500);
             }
         }
 
-        grid.addEventListener('mousedown', handleStart);
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('pointerup', handlePointerUp);
+        canvas.addEventListener('pointercancel', handlePointerUp);
 
-        grid.addEventListener('touchstart', handleStart, {passive: true});
-        window.addEventListener('touchmove', handleMove, {passive: true});
-        window.addEventListener('touchend', handleEnd);
+        // Первичная отрисовка
+        draw();
 
         document.querySelectorAll('.category-header').forEach(header => {
             header.addEventListener('click', () => {
