@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KFC Standartlari</title>
+    <title>KFC / Panera Standartlari</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -29,6 +29,12 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
@@ -36,6 +42,117 @@
             margin: 0;
             padding: 16px;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* LOBBY / GRAFIK QULF EKRANI */
+        #lockScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: opacity 0.4s ease;
+        }
+
+        .lock-container {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .lock-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .lock-subtitle {
+            font-size: 13px;
+            color: var(--hint-color);
+            margin-bottom: 24px;
+        }
+
+        /* Pattern Lock Grid */
+        .pattern-grid {
+            width: 240px;
+            height: 240px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            position: relative;
+            touch-action: none;
+        }
+
+        .pattern-dot {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .pattern-dot::after {
+            content: '';
+            width: 18px;
+            height: 18px;
+            background-color: rgba(142, 142, 147, 0.3);
+            border-radius: 50%;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .pattern-dot.active::after {
+            background-color: var(--accent-color);
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(228, 0, 43, 0.5);
+        }
+
+        .pattern-dot.error::after {
+            background-color: #ff3b30;
+            box-shadow: 0 0 10px rgba(255, 59, 48, 0.5);
+        }
+
+        #patternSvg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .lock-error-msg {
+            color: #ff3b30;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 16px;
+            height: 18px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .shake-anim {
+            animation: shake 0.4s ease;
+        }
+
+        /* ASOSIY KONTENT */
+        #mainContent {
+            display: none;
         }
 
         .colonel-hero {
@@ -208,10 +325,6 @@
             margin-bottom: 6px;
         }
 
-        .card-desc b {
-            color: var(--text-color);
-        }
-
         .badge {
             display: inline-block;
             background: var(--warning-bg);
@@ -223,12 +336,6 @@
             color: #8a6d3b;
             margin-top: 4px;
             margin-right: 4px;
-        }
-
-        .badge-danger {
-            background: var(--danger-bg);
-            border-color: var(--danger-border);
-            color: #c0392b;
         }
 
         .footer-branding {
@@ -245,268 +352,71 @@
 </head>
 <body>
 
-    <div class="colonel-hero">
-        <div class="colonel-avatar">👨🏻‍🦳</div>
-        <div class="colonel-info">
-            <h2>Polkovnik Harland Sanders</h2>
-            <p>«Hamma narsa sevgi va mukammal standartlar bilan qilinishi kerak!» Xush kelibsiz.</p>
+    <!-- GRAFIK KALIT BLOKIROVKA EKRANI -->
+    <div id="lockScreen">
+        <div class="lock-container" id="lockContainer">
+            <div class="lock-title">Himoyalangan Hudud</div>
+            <div class="lock-subtitle">Kirish uchun "4Z" kalitini chizing</div>
+            
+            <div class="pattern-grid" id="patternGrid">
+                <svg id="patternSvg">
+                    <line id="activeLine" x1="0" y1="0" x2="0" y2="0" stroke="#e4002b" stroke-width="4" stroke-linecap="round" style="display:none;"/>
+                </svg>
+                <!-- 9 ta nuqta (0 dan 8 gacha indeksi bilan) -->
+                <!-- 1(0)  2(1)  3(2) -->
+                <!-- 4(3)  5(4)  6(5) -->
+                <!-- 7(6)  8(7)  9(8) -->
+                <div class="pattern-dot" data-id="0"></div>
+                <div class="pattern-dot" data-id="1"></div>
+                <div class="pattern-dot" data-id="2"></div>
+                <div class="pattern-dot" data-id="3"></div>
+                <div class="pattern-dot" data-id="4"></div>
+                <div class="pattern-dot" data-id="5"></div>
+                <div class="pattern-dot" data-id="6"></div>
+                <div class="pattern-dot" data-id="7"></div>
+                <div class="pattern-dot" data-id="8"></div>
+            </div>
+
+            <div class="lock-error-msg" id="errorMsg">Noto'g'ri kalit! Qayta urinib ko'ring</div>
         </div>
     </div>
 
-    <div class="header">
-        <h1>🍗 KFC Standartlari va Retseptlar</h1>
-        <p>Barcha mahsulotlar va texnologik yo'riqnomalar (100% To'liq hajmda)</p>
-    </div>
-
-    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Qidiruv (masalan: Twister, Burger, D10, Frityur)...">
-
-    <!-- 1. BURGERLAR VA TVISTERLAR -->
-    <div class="category">
-        <button class="category-header">🍔 Burgerlar va Tvisterlar</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">🌯 Tvister va Boksmasterlar</div>
-                <div class="sub-group-body">
-                    <div class="card">
-                        <div class="card-title">Tvister OR / HS</div>
-                        <div class="card-desc">• Tortilya 10.5<br>• Mayonez — 20 g (2 нажатия)<br>• Aysberg — 10 g | Tomatlar — 15 g<br>• Stripslar OR/HS — 2 dona</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Boksmaster OR / HS</div>
-                        <div class="card-desc">• Tortilya 10.5 | Mayonez — 30 g (3 нажатия)<br>• Tomatlar — 20 g | Aysberg — 15 g<br>• File OR/HS — 1 | Siyr — 1 | Hashbraun — 1</div>
-                        <div class="badge">Тостерda: 15 сек.</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Boksmaster Chiz OR / HS</div>
-                        <div class="card-desc">• Tortilya 10.5 | Mayonez — 30 g<br>• Aysberg — 15 g | Tomatlar — 20 g<br>• Siyr kotleti — 1 | File OR/HS — 1</div>
-                        <div class="badge">Тостерda: 15 сек.</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Tvister Junior</div>
-                        <div class="card-desc">• Tortilya 8 Siyrli | Siyr — 1<br>• Gorchichniy — 7.5 g (1) | Ketchup — 10 g<br>• Piyoz — 3 g | Bodring — 2 | Baytslar — 5 dona (53 g)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Mega Tvister OR / HS</div>
-                        <div class="card-desc">• Tortilya 12 | Mayonez — 20 g (2) | Ketchup — 20 g (2)<br>• Bodring — 4 | Koul Slou — 40 g | Tomatlar — 20 g<br>• Kartoshka fri — 20 g | Stripslar — 3 dona</div>
-                        <div class="badge">Тостерda: 10 сек.</div>
-                    </div>
-                </div>
+    <!-- ASOSIY KONTENT -->
+    <div id="mainContent">
+        <div class="colonel-hero">
+            <div class="colonel-avatar">👨🏻‍🦳</div>
+            <div class="colonel-info">
+                <h2>Polkovnik Harland Sanders</h2>
+                <p>«Hamma narsa sevgi va mukammal standartlar bilan qilinishi kerak!» Xush kelibsiz.</p>
             </div>
+        </div>
 
-            <div class="sub-group">
-                <div class="sub-group-header">🍔 Burgerlar va Longersiz</div>
-                <div class="sub-group-body">
-                    <div class="card">
-                        <div class="card-title">Buster Burger Junior</div>
-                        <div class="card-desc">• Bulochka: Solnechnaya | Burger sous — 1<br>• Salat (Aysberg): 10 g | Siyr: 1 lomtik<br>• Strips: 1/2 | Bodring: 2 dona + Qo'shimcha sous</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Sanders Burger (OR / HS)</div>
-                        <div class="card-desc">• Bulochka: Briosh 100 mm | Sous: Klassik — 20 g<br>• Bodring: 4 | Salat: 10 g | Siyr: 1 dona<br>• File: Klassik yoki Zinger — 1 dona | Siyr: 1 dona</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Big Sanders Burger (OR / HS)</div>
-                        <div class="card-desc">• Bulochka: Briosh 125 mm | Sous: Klassik — 30 g<br>• Bodring: 4 | Aysberg: 15 g | Pomidor: 15 g<br>• Siyr: 1 | Stripslar: 3 dona (OR/HS) | Siyr: 1</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Shef Burger (OR / HS)</div>
-                        <div class="card-desc">• Bulochka: Imprint | Sous: Sezar — 20 g (2)<br>• Salat (Aysberg): 10 g | Pomidor: 15 g<br>• File: Klassik yoki Zinger — 1 dona</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Chizburger piyozli</div>
-                        <div class="card-desc">• Bulochka: Solnechnaya | Gorchichniy — 7.5 g<br>• Ketchup: 10 g (Z shaklida) | Piyoz: 3 g<br>• Bodring: 1 | Stripslar: 2 dona (OR) | Siyr: 1</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Longer</div>
-                        <div class="card-desc">• Bulochka: Hot-dog | Mayonez — 10 g (1)<br>• Ketchup: 10 g | Piyoz — 3 g<br>• Bodring: 2 dona | Strips: 1 dona (OR)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Shefburger Buffalo Ranch</div>
-                        <div class="card-desc">• Briosh bulochka 100 mm | Buffalo Ranch — 15 g<br>• Piyoz — 3 g | Bodring — 2 | Aysberg — 15 g<br>• File (OR/HS) — 1 | Siyr (lomtevoy) — 1 | Buffalo Ranch — 15 g</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Shefburger Pickle Ranch</div>
-                        <div class="card-desc">• Briosh bulochka 100 mm | Pickle Ranch — 15 g<br>• Aysberg salati — 10 g | Pomidor — 15 g<br>• File (OR/HS) — 1 | Siyr — 1 | Pickle Ranch — 15 g</div>
+        <div class="header">
+            <h1>🍗 KFC Standartlari va Retseptlar</h1>
+            <p>Barcha mahsulotlar va texnologik yo'riqnomalar</p>
+        </div>
+
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Qidiruv (masalan: Twister, Burger, D10)...">
+
+        <!-- KONTENT QISMI -->
+        <div class="category">
+            <button class="category-header">🍔 Burgerlar va Tvisterlar</button>
+            <div class="category-content">
+                <div class="sub-group">
+                    <div class="sub-group-header">🌯 Tvister va Boksmasterlar</div>
+                    <div class="sub-group-body">
+                        <div class="card">
+                            <div class="card-title">Tvister OR / HS</div>
+                            <div class="card-desc">• Tortilya 10.5<br>• Mayonez — 20 g<br>• Aysberg — 10 g | Tomatlar — 15 g<br>• Stripslar OR/HS — 2 dona</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- 2. SOUSLAR VA SABZAVOTLAR -->
-    <div class="category">
-        <button class="category-header">🥬 Souslar va Sabzavotlar</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">🍅 Saqlash Muddatlari va Mezonlari</div>
-                <div class="sub-group-body">
-                    <div class="card">
-                        <div class="card-title">Piyoz / Pomidor / Ajsberg</div>
-                        <div class="card-desc">Saladetta: <b>3 soat</b> (+1°C...+5°C)<br>Ochiq o'ram: <b>12 soat</b> (+1°C...+5°C)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Bodring & Xalapenyo</div>
-                        <div class="card-desc">Saladetta: <b>12 soat</b> (+1°C...+27°C)<br>Tuzlamada (рассол): <b>7 sutka</b> (+1°C...+5°C)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Pishloq (Сыр)</div>
-                        <div class="card-desc">Saladetta: <b>3 soat</b> (+1°C...+5°C)<br>Ochiq o'ram: <b>72 soat</b> (+1°C...+5°C)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Ketchup</div>
-                        <div class="card-desc">Saladetta: <b>48 soat</b> (+1°C...+27°C)<br>Ochiq o'ram: <b>5 kun</b> (+1°C...+5°C)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Tubadagi Souslar (Tsezar, Burger, Mayonez, Garchitsa)</div>
-                        <div class="card-desc">Tubada saqlash: <b>12 soat</b><br>Ochiq o'ram: <b>48 soat</b></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Qovurilgan Piyoz</div>
-                        <div class="card-desc">Marmitka ichida: <b>12 soat</b><br>Ishlab chiqaruvchi o'ramida: markirovka bo'yicha</div>
-                    </div>
-                </div>
-            </div>
+        <div class="footer-branding">
+            OOO International Food Chain
         </div>
-    </div>
-
-    <!-- 3. PANIROVKA VA ARALASHMALAR -->
-    <div class="category">
-        <button class="category-header">🌾 Panirovka va Aralashmalar</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">📦 Retseptura va Talablar</div>
-                <div class="sub-group-body">
-                    <div class="card">
-                        <div class="card-title">OR (Original) Aralashmasi</div>
-                        <div class="card-desc">Un: 11,340 gr (Yaroqlilik: 12 oy)<br>Ziravorlar MIX OR: 2,270 gr (Yaroqlilik: 12 oy)</div>
-                        <div class="badge">Tayyor partiya yaroqliligi: 7 kun</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">HS (Hot & Spicy) Aralashmasi</div>
-                        <div class="card-desc">Un: 11,340 gr (Yaroqlilik: 12 oy)<br>Ziravorlar HS: 198 gr (Yaroqlilik: 9 oy)</div>
-                        <div class="badge">Tayyor partiya yaroqliligi: 7 kun</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Elash va Aralashtirish qoidalari</div>
-                        <div class="card-desc">• Yangi to'plamni 20 marta aralashtirish, keyin 2 marta elakdan o'tkazish.<br>• Kechagi partiya yangi bilan 1:1 nisbatda aralashtiriladi.<br>• Suvni almashtirish: Oyoq va Zinger uchun 4 martagacha, qolganlar uchun 2 martagacha.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. PISHIRISH REGLAMENTI -->
-    <div class="category">
-        <button class="category-header">🔥 Pishirish Reglamenti (Frityur)</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">🔒 Yopiq va Ochiq Jarovnya</div>
-                <div class="sub-group-body">
-                    <div class="card">
-                        <div class="card-title">Yopiq Jarovnya (Henny Penny)</div>
-                        <div class="card-desc"><b>Oyoqlar:</b> 9-18 dona: 154°C | 14:30 min (Max 72 dona - 182°C | 14:00 min)<br><b>Stripsi OR:</b> 18 dona: 175°C | 4:20 min<br><b>File OR / Klasik:</b> 6-18 dona: 182°C | 5:30 min</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Ochiq Jarovnya</div>
-                        <div class="card-desc"><b>Stripsi HS:</b> 171°C | 4:30 min<br><b>File HS / Zinger:</b> 171°C | 7:00 min<br><b>Qanotlar:</b> 171°C | 10:00 min (2-daqiqadan so'ng chayqatiladi)<br><b>Baytsi:</b> 171°C | 3:05 min (45 soniyadan keyin chayqatiladi)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Qo'shimcha Mahsulotlar</div>
-                        <div class="card-desc">• <b>Pirojok:</b> 1-12 dona | Vaqt: 5 min 30 sek (Shut: 60 min, Shkaf: 90 min)<br>• <b>Naggetslar:</b> 6-30 dona | Vaqt: 2 min 05 sek (Saqlash: 20 min)<br>• <b>Hashbraun:</b> 1-12 dona | Vaqt: 3 min 30 sek (Saqlash: 20 min)<br>• <b>Siyr kotleti:</b> 1-12 dona | Vaqt: 2 min 10 sek (Saqlash: 20 min)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Kartoshka fri 6x6</div>
-                        <div class="card-desc">• Min: 230 g | Max: 680 g | Vaqt: 2 min 30 sek<br>• Yog'ni oqizish: 5 sek | Saqlash: 5 min<br>• Tuzlash: 230-500g — 1 perevorot; 500-680g — 2 perevorot. 6 marta aralashtirish.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5. MOY VA FILTRATSIYA -->
-    <div class="category">
-        <button class="category-header">🛢️ Moy va Filtratsiya</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">⚙️ Texnik Ko'rsatmalar</div>
-                <div class="sub-group-body">
-                    <div class="card">
-                        <div class="card-title">Magnesol Kukunidan Foydalanish</div>
-                        <div class="card-desc">Dozalash: 30 litr moy uchun 182 gr. Yaroqlilik: 5 yil.</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Filtratsiya va Osvitleniya</div>
-                        <div class="card-desc">• <b>Filtratsiya:</b> Har 10 ta pishirish tsiklidan keyin bajariladi.<br>• <b>Osvitleniya:</b> Kuniga 2 marta (Ertalabki va kechki chas-pikdan oldin).<br>• Yopiq frityur HP 8: 2 ta Magnesol o'rami. Ochiq frityur HP: 1 o'ram.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. SHAXSIY HIMOYA VOSTALARI (SIZ) -->
-    <div class="category">
-        <button class="category-header">🛡️ Shaxsiy Himoya Vositalari (СИЗ)</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">👷 Xavfsizlik Qoidalari</div>
-                <div class="sub-group-body">
-                    <div class="card"><div class="card-title">1. Panerovichniy</div><div class="card-desc">Qo'lqop, Maska, Fartuk</div></div>
-                    <div class="card"><div class="card-title">2. Elektrichiskiy</div><div class="card-desc">Rezina etik, Qo'lqop, Maska</div></div>
-                    <div class="card"><div class="card-title">3. Ximichiskiy</div><div class="card-desc">Maska, Qo'lqop</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 7. ISSIQLIK SHKAFI -->
-    <div class="category">
-        <button class="category-header">🌡️ Issiqlik Shkafi (Saqlash)</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">⏱️ Tayyor Mahsulot Vaqtlari</div>
-                <div class="sub-group-body">
-                    <div class="card">
-                        <div class="card-title">Saqlash Mezonlari</div>
-                        <div class="card-desc">• Oyoqlar / Qanotlar: <b>90 min</b><br>• File OR / HS: <b>45 min</b><br>• Stripsi OR / HS: <b>30 min</b><br>• Baytsi: <b>15 min</b></div>
-                        <div class="badge">Shkaf temp: +65°C...+82°C</div>
-                        <div class="badge">Go'sht min: +60°C</div>
-                        <div class="badge badge-danger">Yangi go'sht: > +85°C</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 8. DIVERSEY XIMIYA (TO'LIQ 16 TA VOSITA) -->
-    <div class="category">
-        <button class="category-header">🧪 Diversey Kimyoviy Vositalari (16 ta)</button>
-        <div class="category-content">
-            <div class="sub-group">
-                <div class="sub-group-header">🧼 Professional Kimyo Ro'yxati</div>
-                <div class="sub-group-body">
-                    <div class="card"><div class="card-title">1. Soft Care Plus Free / Alceplus</div><div class="card-desc">Suyuq sovun va antiseptik qo'l yuvish vositasi.</div></div>
-                    <div class="card"><div class="card-title">2. Suma D10</div><div class="card-desc">Universal sirtlarni tozalash va dezinfeksiya qilish. <span class="badge">Norma: 150-200 ppm</span></div></div>
-                    <div class="card"><div class="card-title">3. Easyfoam</div><div class="card-desc">Ko'pikli tozalash vositasi (devorlar va og'ir ifloslanishlar uchun).</div></div>
-                    <div class="card"><div class="card-title">4. Suma Break Up</div><div class="card-desc">Oshxona pol va yuzalaridagi kuchli yog'larni ketkazish uchun detarjenti.</div></div>
-                    <div class="card"><div class="card-title">5. Suma Light D1.2</div><div class="card-desc">Qo'lda idish-tovoq yuvish uchun yuqori samarali suyuqlik.</div></div>
-                    <div class="card"><div class="card-title">6. Suma Tab D4</div><div class="card-desc">Xlorli dezinfektsiyalovchi va oqartiruvchi tabletkalar.</div></div>
-                    <div class="card"><div class="card-title">7. Suma Cal-X D5</div><div class="card-desc">Kaltsiy va qattiq suv o'rnatmalarini (nagruzka/nakip) tozalash vositasi.</div></div>
-                    <div class="card"><div class="card-title">8. Freeze D2.9</div><div class="card-desc">Muzlatkich kameralarini muzdan tushirmasdan tozalash va yuvish.</div></div>
-                    <div class="card"><div class="card-title">9. Suma Inox D7.1</div><div class="card-desc">Zanglamaydigan po'latdan yasalgan sirtlarni parvarishlash va porlatish.</div></div>
-                    <div class="card"><div class="card-title">10. Diver Gard 901</div><div class="card-desc">Kanalizatsiya va quvurlardagi tiqilmalar hamda hidlarga qarshi vosita.</div></div>
-                    <div class="card"><div class="card-title">11. Taski Sprin Spitfire</div><div class="card-desc">Qattiq sirtlardagi o'jar dog'lar va kirni tezkor ketkazuvchi tozalovchi.</div></div>
-                    <div class="card"><div class="card-title">12. Suma Grill Hi-Temp D9.8</div><div class="card-desc">Qizigan pechlar va gorizontal tosterni tozalash. <span class="badge badge-danger">&gt;= +100°C</span></div></div>
-                    <div class="card"><div class="card-title">13. Suma Anti-Stick</div><div class="card-desc">Toster va yopishmaydigan yuzalarga surtiladigan maxsus himoya.</div></div>
-                    <div class="card"><div class="card-title">14. Room Care R5</div><div class="card-desc">Xona havosini yangilash va yoqimsiz hidlarni yo'q qilish uchun sprey.</div></div>
-                    <div class="card"><div class="card-title">15. Room Care R6</div><div class="card-desc">Sanuzellar va unitazlarni chuqur tozalash, kalsiy qoldiqlarini ketkazish.</div></div>
-                    <div class="card"><div class="card-title">16. Suma Multi D2</div><div class="card-desc">Universal oziq-ovqat sanoati va oshxona yuzalari uchun suyuq detarjent.</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer-branding">
-        OOO International Food Chain
     </div>
 
     <script>
@@ -514,10 +424,106 @@
         tg.ready();
         tg.expand();
 
+        // Siz taqdim etgan tartib: 8 - 6 - 5 - 4 - 1 - 3 - 7 - 9
+        // Indekslar bo'yicha mos kelishi: 8(7), 6(5), 5(4), 4(3), 1(0), 3(2), 7(6), 9(8)
+        const CORRECT_PATTERN = ['7', '5', '4', '3', '0', '2', '6', '8'];
+
+        let isDrawing = false;
+        let selectedDots = [];
+        const grid = document.getElementById('patternGrid');
+        const dots = document.querySelectorAll('.pattern-dot');
+        const activeLine = document.getElementById('activeLine');
+        const errorMsg = document.getElementById('errorMsg');
+        const lockContainer = document.getElementById('lockContainer');
+
+        function getDotCenter(dot) {
+            const rect = dot.getBoundingClientRect();
+            const gridRect = grid.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2 - gridRect.left,
+                y: rect.top + rect.height / 2 - gridRect.top
+            };
+        }
+
+        function updateSvgLine() {
+            if (selectedDots.length < 2) {
+                activeLine.style.display = 'none';
+                return;
+            }
+            const firstDot = grid.querySelector(`[data-id="${selectedDots[0]}"]`);
+            const lastDot = grid.querySelector(`[data-id="${selectedDots[selectedDots.length - 1]}"]`);
+            
+            const start = getDotCenter(firstDot);
+            const end = getDotCenter(lastDot);
+
+            activeLine.setAttribute('x1', start.x);
+            activeLine.setAttribute('y1', start.y);
+            activeLine.setAttribute('x2', end.x);
+            activeLine.setAttribute('y2', end.y);
+            activeLine.style.display = 'block';
+        }
+
+        function handleTouchStart(e) {
+            isDrawing = true;
+            selectedDots = [];
+            errorMsg.style.opacity = '0';
+            dots.forEach(d => d.classList.remove('active', 'error'));
+            activeLine.style.display = 'none';
+            checkTouch(e.touches ? e.touches[0] : e);
+        }
+
+        function handleTouchMove(e) {
+            if (!isDrawing) return;
+            const touch = e.touches ? e.touches[0] : e;
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (target && target.classList.contains('pattern-dot')) {
+                const id = target.getAttribute('data-id');
+                if (!selectedDots.includes(id)) {
+                    selectedDots.push(id);
+                    target.classList.add('active');
+                    updateSvgLine();
+                }
+            }
+        }
+
+        function handleTouchEnd() {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const userPatternStr = JSON.stringify(selectedDots);
+            const correctPatternStr = JSON.stringify(CORRECT_PATTERN);
+
+            if (userPatternStr === correctPatternStr) {
+                document.getElementById('lockScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('lockScreen').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                }, 400);
+            } else {
+                dots.forEach(d => d.classList.add('error'));
+                errorMsg.style.opacity = '1';
+                lockContainer.classList.add('shake-anim');
+                
+                setTimeout(() => {
+                    lockContainer.classList.remove('shake-anim');
+                    dots.forEach(d => d.classList.remove('active', 'error'));
+                    activeLine.style.display = 'none';
+                    selectedDots = [];
+                }, 600);
+            }
+        }
+
+        grid.addEventListener('mousedown', handleTouchStart);
+        window.addEventListener('mousemove', handleTouchMove);
+        window.addEventListener('mouseup', handleTouchEnd);
+
+        grid.addEventListener('touchstart', handleTouchStart, {passive: true});
+        window.addEventListener('touchmove', handleTouchMove, {passive: true});
+        window.addEventListener('touchend', handleTouchEnd);
+
         document.querySelectorAll('.category-header').forEach(header => {
             header.addEventListener('click', () => {
-                const category = header.parentElement;
-                category.classList.toggle('active');
+                header.parentElement.classList.toggle('active');
             });
         });
 
@@ -526,23 +532,15 @@
             document.querySelectorAll('.category').forEach(category => {
                 let hasMatch = false;
                 category.querySelectorAll('.card').forEach(card => {
-                    const text = card.textContent.toLowerCase();
-                    if (text.includes(query)) {
+                    if (card.textContent.toLowerCase().includes(query)) {
                         card.style.display = 'block';
                         hasMatch = true;
                     } else {
                         card.style.display = 'none';
                     }
                 });
-                
-                if (hasMatch) {
-                    category.style.display = 'block';
-                    if (query.length > 0) {
-                        category.classList.add('active');
-                    }
-                } else {
-                    category.style.display = query.length > 0 ? 'none' : 'block';
-                }
+                category.style.display = (hasMatch || query.length === 0) ? 'block' : 'none';
+                if (hasMatch && query.length > 0) category.classList.add('active');
             });
         });
     </script>
