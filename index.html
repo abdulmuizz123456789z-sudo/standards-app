@@ -13,8 +13,6 @@
             --hint-color: var(--tg-theme-hint-color, #8e8e93);
             --accent-color: #e4002b;
             --accent-gradient: linear-gradient(135deg, #ff1e38 0%, #c4001d 100%);
-            --warning-bg: #fff9e6;
-            --warning-border: #ffcc00;
         }
 
         @keyframes fadeInScale {
@@ -348,16 +346,7 @@
                 <svg id="patternSvg">
                     <path id="activePath" d="" stroke="#e4002b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" style="display:none;"/>
                 </svg>
-                <div class="pattern-dot" data-id="0"></div>
-                <div class="pattern-dot" data-id="1"></div>
-                <div class="pattern-dot" data-id="2"></div>
-                <div class="pattern-dot" data-id="3"></div>
-                <div class="pattern-dot" data-id="4"></div>
-                <div class="pattern-dot" data-id="5"></div>
-                <div class="pattern-dot" data-id="6"></div>
-                <div class="pattern-dot" data-id="7"></div>
-                <div class="pattern-dot" data-id="8"></div>
-            </div>
+                <div class="pattern-dot" data-id="0"></div> <div class="pattern-dot" data-id="1"></div> <div class="pattern-dot" data-id="2"></div> <div class="pattern-dot" data-id="3"></div> <div class="pattern-dot" data-id="4"></div> <div class="pattern-dot" data-id="5"></div> <div class="pattern-dot" data-id="6"></div> <div class="pattern-dot" data-id="7"></div> <div class="pattern-dot" data-id="8"></div> </div>
 
             <div class="lock-error-msg" id="errorMsg">Noto'g'ri kalit! Qayta urinib ko'ring</div>
         </div>
@@ -404,6 +393,8 @@
         tg.ready();
         tg.expand();
 
+        // Siz ko'rsatgan tartib bo'yicha "4Z" kaliti (8 -> 6 -> 5 -> 4 -> 1 -> 3 -> 7 -> 9)
+        // Indekslar ko'rinishida: ['7', '5', '4', '3', '0', '2', '6', '8']
         const CORRECT_PATTERN = ['7', '5', '4', '3', '0', '2', '6', '8'];
 
         let isDrawing = false;
@@ -449,7 +440,6 @@
                 }
             }
 
-            // Agar barmoq/mishqali hozir harakatlanayotgan bo'lsa, oxirgi nuqtadan kursorga qarab chiziqni tortib turamiz
             if (currentMousePos && isDrawing) {
                 d += ` L ${currentMousePos.x} ${currentMousePos.y}`;
             }
@@ -465,8 +455,8 @@
 
             for (let dot of dotCoords) {
                 const distance = Math.hypot(dot.x - x, dot.y - y);
-                // Nuqta teginish radiusi (kengaytirilgan - 40px, adashib ketmasligi uchun)
-                if (distance < 40) {
+                // Nuqta tutish radiusi (45px - barmoq tez surilganda ham ushlab qolish uchun)
+                if (distance < 45) {
                     if (!selectedDots.includes(dot.id)) {
                         selectedDots.push(dot.id);
                         dot.element.classList.add('active');
@@ -503,12 +493,10 @@
 
             if (selectedDots.length === 0) return;
 
-            // Faqat to'g'ri nuqtalar ketma-ketligini tekshiramiz
             const userPatternStr = JSON.stringify(selectedDots);
             const correctPatternStr = JSON.stringify(CORRECT_PATTERN);
 
             if (userPatternStr === correctPatternStr) {
-                // To'g'ri kiritilganda chiziqni yakuniy holatda qoldirib, ekran ochiladi
                 updateSvgPath(null);
                 document.getElementById('lockScreen').style.opacity = '0';
                 setTimeout(() => {
