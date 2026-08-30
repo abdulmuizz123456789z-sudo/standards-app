@@ -1,41 +1,440 @@
-<div id="lockScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color, #f4f4f7); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
-    <div style="background: var(--card-bg, #ffffff); padding: 24px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; width: 100%; max-width: 320px; border: 1px solid rgba(0,0,0,0.05);">
-        <div style="font-size: 18px; font-weight: 700; margin-bottom: 6px;">Himoyalangan Hudud</div>
-        <div style="font-size: 13px; color: var(--hint-color, #8e8e93); margin-bottom: 20px;">Parolni kiriting</div>
-        
-        <input type="password" id="passwordInput" placeholder="Parol..." style="width: 100%; padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08); background: var(--bg-color, #f4f4f7); color: var(--text-color, #1c1c1e); font-size: 16px; box-sizing: border-box; margin-bottom: 12px; outline: none; text-align: center;">
-        
-        <button id="checkPassBtn" style="width: 100%; padding: 14px; border-radius: 14px; border: none; background: #e4002b; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">Kirish</button>
-        
-        <div id="passErrorMsg" style="color: #ff3b30; font-size: 13px; font-weight: 600; margin-top: 12px; height: 18px; opacity: 0; transition: opacity 0.2s;">Noto'g'ri parol!</div>
-    </div>
-</div>
-
-<script>
-    const CORRECT_PASSWORD = "!KFC2026";
-
-    document.getElementById('checkPassBtn').addEventListener('click', validatePassword);
-    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') validatePassword();
-    });
-
-    function validatePassword() {
-        const input = document.getElementById('passwordInput').value.trim();
-        const errorMsg = document.getElementById('passErrorMsg');
-        
-        if (input === CORRECT_PASSWORD) {
-            const lockScreen = document.getElementById('lockScreen');
-            lockScreen.style.opacity = '0';
-            setTimeout(() => {
-                lockScreen.style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-            }, 300);
-        } else {
-            errorMsg.style.opacity = '1';
-            document.getElementById('passwordInput').style.borderColor = '#ff3b30';
-            setTimeout(() => {
-                errorMsg.style.opacity = '0';
-            }, 2000);
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KFC / Panera Standartlari</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #f4f4f7);
+            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #1c1c1e);
+            --hint-color: var(--tg-theme-hint-color, #8e8e93);
+            --accent-color: #e4002b;
+            --accent-gradient: linear-gradient(135deg, #ff1e38 0%, #c4001d 100%);
         }
-    }
-</script>
+
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: translateY(12px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes colonelEntry {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* Экран блокировки по паролю */
+        #lockScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: opacity 0.3s ease;
+        }
+
+        .lock-container {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .lock-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .lock-subtitle {
+            font-size: 13px;
+            color: var(--hint-color);
+            margin-bottom: 20px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+            outline: none;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .password-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .lock-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(228, 0, 43, 0.3);
+        }
+
+        .lock-error-msg {
+            color: #ff3b30;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+            height: 18px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        /* Основной контент (скрыт до ввода пароля) */
+        #mainContent {
+            display: none;
+        }
+
+        .colonel-hero {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 6px 20px rgba(228, 0, 43, 0.1);
+            border: 2px solid rgba(228, 0, 43, 0.2);
+            animation: colonelEntry 0.6s ease forwards;
+        }
+
+        .colonel-avatar {
+            width: 70px;
+            height: 70px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(228, 0, 43, 0.3);
+        }
+
+        .colonel-info h2 {
+            font-size: 17px;
+            margin: 0 0 4px 0;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .colonel-info p {
+            font-size: 13px;
+            color: var(--hint-color);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin: 0 0 4px 0;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--hint-color);
+            margin: 0;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 15px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent-color);
+        }
+
+        .category {
+            background: var(--card-bg);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.04);
+            animation: fadeInScale 0.5s ease forwards;
+        }
+
+        .category-header {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: left;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .category-header::after {
+            content: '❯';
+            font-size: 13px;
+            color: var(--hint-color);
+            transition: transform 0.3s ease;
+        }
+
+        .category.active .category-header::after {
+            transform: rotate(90deg);
+            color: var(--accent-color);
+        }
+
+        .category-content {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 16px;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+        }
+
+        .category.active .category-content {
+            max-height: 25000px;
+            opacity: 1;
+            padding: 0 16px 16px 16px;
+        }
+
+        .sub-group {
+            margin-top: 12px;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .sub-group-header {
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent-color);
+            background: rgba(228, 0, 43, 0.04);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .sub-group-body {
+            padding: 8px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 8px;
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--hint-color);
+            margin-bottom: 6px;
+        }
+
+        .footer-branding {
+            text-align: center;
+            margin: 25px 0 10px 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--hint-color);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="lockScreen">
+        <div class="lock-container">
+            <div class="lock-title">Himoyalangan Hudud</div>
+            <div class="lock-subtitle">Parolni kiriting</div>
+            
+            <input type="password" id="passwordInput" class="password-input" placeholder="Parol...">
+            <button id="checkPassBtn" class="lock-btn">Kirish</button>
+            
+            <div class="lock-error-msg" id="passErrorMsg">Noto'g'ri parol!</div>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <div class="colonel-hero">
+            <div class="colonel-avatar">👨🏻‍🦳</div>
+            <div class="colonel-info">
+                <h2>Polkovnik Harland Sanders</h2>
+                <p>«Hamma narsa sevgi va mukammal standartlar bilan qilinishi kerak!» Xush kelibsiz.</p>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>🍗 KFC Standartlari va Retseptlar</h1>
+            <p>Barcha mahsulotlar va texnologik yo'riqnomalar</p>
+        </div>
+
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Qidiruv (masalan: Twister, Burger, D10)...">
+
+        <div class="category">
+            <button class="category-header">🍔 Burgerlar va Tvisterlar</button>
+            <div class="category-content">
+                <div class="sub-group">
+                    <div class="sub-group-header">🌯 Tvister va Boksmasterlar</div>
+                    <div class="sub-group-body">
+                        <div class="card">
+                            <div class="card-title">Tvister OR / HS</div>
+                            <div class="card-desc">• Tortilya 10.5<br>• Mayonez — 20 g<br>• Aysberg — 10 g | Tomatlar — 15 g<br>• Stripslar OR/HS — 2 dona</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Boksmaster</div>
+                            <div class="card-desc">• Tortilya 10.5<br>• Sos (Sous) — 20 g<br>• Pishloq — 1 slays<br>• Hashbrown (kartoshka deruni) — 1 dona<br>• Aysberg — 15 g | Tomatlar — 20 g<br>• Stripslar — 2 dona</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <button class="category-header">🍗 Tovuq va Panerovka standartlari</button>
+            <div class="category-content">
+                <div class="sub-group">
+                    <div class="sub-group-header">🔥 Asosiy mahsulotlar</div>
+                    <div class="sub-group-body">
+                        <div class="card">
+                            <div class="card-title">Original Recipe (OR)</div>
+                            <div class="card-desc">• Maxsus 11 ta o'tlar va ziravorlar aralashmasi.<br>• Suvga botirish va unlash texnologiyasi.</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Hot & Spicy (HS / Strips va Bayts)</div>
+                            <div class="card-desc">• Achchiq marinad.<br>• Qattiq qatlamli panerovka texnologiyasi.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-branding">
+            OOO International Food Chain
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const CORRECT_PASSWORD = "!KFC2026";
+
+        document.getElementById('checkPassBtn').addEventListener('click', validatePassword);
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') validatePassword();
+        });
+
+        function validatePassword() {
+            const input = document.getElementById('passwordInput').value.trim();
+            const errorMsg = document.getElementById('passErrorMsg');
+            
+            if (input === CORRECT_PASSWORD) {
+                const lockScreen = document.getElementById('lockScreen');
+                lockScreen.style.opacity = '0';
+                setTimeout(() => {
+                    lockScreen.style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                }, 300);
+            } else {
+                errorMsg.style.opacity = '1';
+                document.getElementById('passwordInput').style.borderColor = '#ff3b30';
+                setTimeout(() => {
+                    errorMsg.style.opacity = '0';
+                }, 2000);
+            }
+        }
+
+        // Управление аккордеонами (открытие/закрытие категорий)
+        document.querySelectorAll('.category-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.parentElement.classList.toggle('active');
+            });
+        });
+
+        // Живой поиск по стандартам
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            document.querySelectorAll('.category').forEach(category => {
+                let hasMatch = false;
+                category.querySelectorAll('.card').forEach(card => {
+                    if (card.textContent.toLowerCase().includes(query)) {
+                        card.style.display = 'block';
+                        hasMatch = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                category.style.display = (hasMatch || query.length === 0) ? 'block' : 'none';
+                if (hasMatch && query.length > 0) category.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
