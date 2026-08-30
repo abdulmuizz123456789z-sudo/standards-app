@@ -340,7 +340,7 @@
     <div id="lockScreen">
         <div class="lock-container" id="lockContainer">
             <div class="lock-title">Himoyalangan Hudud</div>
-            <div class="lock-subtitle">Kirish uchun "4Z" kalitini chizing</div>
+            <div class="lock-subtitle">Kirish uchun "Z" kalitini chizing</div>
             
             <div class="pattern-grid" id="patternGrid">
                 <svg id="patternSvg">
@@ -393,9 +393,9 @@
         tg.ready();
         tg.expand();
 
-        // Siz ko'rsatgan tartib bo'yicha "4Z" kaliti (8 -> 6 -> 5 -> 4 -> 1 -> 3 -> 7 -> 9)
-        // Indekslar ko'rinishida: ['7', '5', '4', '3', '0', '2', '6', '8']
-        const CORRECT_PATTERN = ['7', '5', '4', '3', '0', '2', '6', '8'];
+        // Точный путь по картинке Z (3 -> 2 -> 1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9)
+        // Переведенный в индексы: ['2', '1', '0', '3', '4', '5', '6', '7', '8']
+        const CORRECT_PATTERN = ['2', '1', '0', '3', '4', '5', '6', '7', '8'];
 
         let isDrawing = false;
         let selectedDots = [];
@@ -455,7 +455,6 @@
 
             for (let dot of dotCoords) {
                 const distance = Math.hypot(dot.x - x, dot.y - y);
-                // Nuqta tutish radiusi (45px - barmoq tez surilganda ham ushlab qolish uchun)
                 if (distance < 45) {
                     if (!selectedDots.includes(dot.id)) {
                         selectedDots.push(dot.id);
