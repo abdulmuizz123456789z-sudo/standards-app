@@ -25,6 +25,12 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
@@ -36,7 +42,7 @@
             overflow-x: hidden;
         }
 
-        /* Экран блокировки по паролю */
+        /* Экран блокировки (Графический ключ + Текстовый резерв) */
         #lockScreen {
             position: fixed;
             top: 0;
@@ -74,19 +80,41 @@
         .lock-subtitle {
             font-size: 13px;
             color: var(--hint-color);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+        }
+
+        .pattern-canvas-wrap {
+            width: 260px;
+            height: 260px;
+            margin: 0 auto 12px auto;
+            position: relative;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        .divider {
+            font-size: 11px;
+            color: var(--hint-color);
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .password-input {
             width: 100%;
-            padding: 14px 18px;
-            border-radius: 14px;
+            padding: 10px 14px;
+            border-radius: 12px;
             border: 1px solid rgba(0,0,0,0.08);
             background: var(--bg-color);
             color: var(--text-color);
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
-            margin-bottom: 12px;
             outline: none;
             text-align: center;
             transition: border-color 0.3s;
@@ -94,19 +122,6 @@
 
         .password-input:focus {
             border-color: var(--accent-color);
-        }
-
-        .lock-btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            border: none;
-            background: var(--accent-gradient);
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(228, 0, 43, 0.3);
         }
 
         .lock-error-msg {
@@ -119,7 +134,11 @@
             transition: opacity 0.2s;
         }
 
-        /* Основной контент (скрыт до ввода пароля) */
+        .shake-anim {
+            animation: shake 0.4s ease;
+        }
+
+        /* Основной контент (скрыт до разблокировки) */
         #mainContent {
             display: none;
         }
@@ -309,14 +328,18 @@
 <body>
 
     <div id="lockScreen">
-        <div class="lock-container">
+        <div class="lock-container" id="lockContainer">
             <div class="lock-title">Himoyalangan Hudud</div>
-            <div class="lock-subtitle">Parolni kiriting</div>
+            <div class="lock-subtitle">"Z" kalitini chizing yoki parol kiriting</div>
             
-            <input type="password" id="passwordInput" class="password-input" placeholder="Parol...">
-            <button id="checkPassBtn" class="lock-btn">Kirish</button>
-            
-            <div class="lock-error-msg" id="passErrorMsg">Noto'g'ri parol!</div>
+            <div class="pattern-canvas-wrap">
+                <canvas id="patternCanvas" width="520" height="520"></canvas>
+            </div>
+
+            <div class="divider">yoki parol</div>
+            <input type="password" id="passwordInput" class="password-input" placeholder="!KFC2026">
+
+            <div class="lock-error-msg" id="errorMsg">Noto'g'ri kalit yoki parol!</div>
         </div>
     </div>
 
@@ -374,6 +397,21 @@
             </div>
         </div>
 
+        <div class="category">
+            <button class="category-header">🍟 Frityur va Harorat rejimları</button>
+            <div class="category-content">
+                <div class="sub-group">
+                    <div class="sub-group-header">🌡️ Yog' va jihozlar</div>
+                    <div class="sub-group-body">
+                        <div class="card">
+                            <div class="card-title">Fritur yog'i harorati</div>
+                            <div class="card-desc">• Tovuq mahsulotlari uchun standart harorat.<br>• Filtratsiya qilish davriyligi va sifat nazorati.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer-branding">
             OOO International Food Chain
         </div>
@@ -385,40 +423,177 @@
         tg.expand();
 
         const CORRECT_PASSWORD = "!KFC2026";
+        // Графический ключ «Z» по точкам (индексы: 2 -> 1 -> 0 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8)
+        const CORRECT_PATTERN = [2, 1, 0, 3, 4, 5, 6, 7, 8];
 
-        document.getElementById('checkPassBtn').addEventListener('click', validatePassword);
-        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') validatePassword();
-        });
+        const dots = [
+            {id: 0, x: 104, y: 104},
+            {id: 1, x: 260, y: 104},
+            {id: 2, x: 416, y: 104},
+            {id: 3, x: 104, y: 260},
+            {id: 4, x: 260, y: 260},
+            {id: 5, x: 416, y: 260},
+            {id: 6, x: 104, y: 416},
+            {id: 7, x: 260, y: 416},
+            {id: 8, x: 416, y: 416}
+        ];
 
-        function validatePassword() {
-            const input = document.getElementById('passwordInput').value.trim();
-            const errorMsg = document.getElementById('passErrorMsg');
-            
-            if (input === CORRECT_PASSWORD) {
-                const lockScreen = document.getElementById('lockScreen');
-                lockScreen.style.opacity = '0';
-                setTimeout(() => {
-                    lockScreen.style.display = 'none';
-                    document.getElementById('mainContent').style.display = 'block';
-                }, 300);
-            } else {
-                errorMsg.style.opacity = '1';
-                document.getElementById('passwordInput').style.borderColor = '#ff3b30';
-                setTimeout(() => {
-                    errorMsg.style.opacity = '0';
-                }, 2000);
+        let isDrawing = false;
+        let selectedDots = [];
+        let currentPos = null;
+        let isErrorState = false;
+
+        const canvas = document.getElementById('patternCanvas');
+        const ctx = canvas.getContext('2d');
+        const errorMsg = document.getElementById('errorMsg');
+        const lockContainer = document.getElementById('lockContainer');
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (selectedDots.length > 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = isErrorState ? '#ff3b30' : '#e4002b';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                const first = dots.find(d => d.id === selectedDots[0]);
+                ctx.moveTo(first.x, first.y);
+
+                for (let i = 1; i < selectedDots.length; i++) {
+                    const dot = dots.find(d => d.id === selectedDots[i]);
+                    ctx.lineTo(dot.x, dot.y);
+                }
+
+                if (isDrawing && currentPos) {
+                    ctx.lineTo(currentPos.x, currentPos.y);
+                }
+
+                ctx.stroke();
+            }
+
+            dots.forEach(dot => {
+                const isSelected = selectedDots.includes(dot.id);
+                
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, isSelected ? 22 : 14, 0, Math.PI * 2);
+                ctx.fillStyle = isErrorState ? (isSelected ? '#ff3b30' : 'rgba(142, 142, 147, 0.35)') : (isSelected ? '#e4002b' : 'rgba(142, 142, 147, 0.35)');
+                ctx.fill();
+
+                if (isSelected) {
+                    ctx.beginPath();
+                    ctx.arc(dot.x, dot.y, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                }
+            });
+        }
+
+        function getCanvasPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function checkHit(pos) {
+            for (let dot of dots) {
+                const dist = Math.hypot(dot.x - pos.x, dot.y - pos.y);
+                if (dist < 55) {
+                    if (!selectedDots.includes(dot.id)) {
+                        selectedDots.push(dot.id);
+                    }
+                    break;
+                }
             }
         }
 
-        // Управление аккордеонами (открытие/закрытие категорий)
+        function unlockSuccess() {
+            document.getElementById('lockScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            }, 300);
+        }
+
+        function triggerError() {
+            isErrorState = true;
+            errorMsg.style.opacity = '1';
+            lockContainer.classList.add('shake-anim');
+            draw();
+
+            setTimeout(() => {
+                lockContainer.classList.remove('shake-anim');
+                isErrorState = false;
+                selectedDots = [];
+                draw();
+            }, 500);
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            isDrawing = true;
+            isErrorState = false;
+            selectedDots = [];
+            errorMsg.style.opacity = '0';
+            currentPos = getCanvasPos(e);
+            checkHit(currentPos);
+            draw();
+            canvas.setPointerCapture(e.pointerId);
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isDrawing) return;
+            currentPos = getCanvasPos(e);
+            checkHit(currentPos);
+            draw();
+        });
+
+        function handlePointerUp() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            currentPos = null;
+
+            if (selectedDots.length === 0) {
+                draw();
+                return;
+            }
+
+            if (JSON.stringify(selectedDots) === JSON.stringify(CORRECT_PATTERN)) {
+                draw();
+                unlockSuccess();
+            } else {
+                triggerError();
+            }
+        }
+
+        canvas.addEventListener('pointerup', handlePointerUp);
+        canvas.addEventListener('pointercancel', handlePointerUp);
+
+        // Проверка текстового пароля
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value.trim() === CORRECT_PASSWORD) {
+                    unlockSuccess();
+                } else {
+                    triggerError();
+                }
+            }
+        });
+
+        draw();
+
+        // Аккордеоны
         document.querySelectorAll('.category-header').forEach(header => {
             header.addEventListener('click', () => {
                 header.parentElement.classList.toggle('active');
             });
         });
 
-        // Живой поиск по стандартам
+        // Поиск
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase().trim();
             document.querySelectorAll('.category').forEach(category => {
